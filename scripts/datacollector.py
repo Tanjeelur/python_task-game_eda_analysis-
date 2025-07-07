@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import time
 import re
+import os
 from tqdm import tqdm
 
 def scrape_cricinfo_innings(url):
@@ -104,13 +105,22 @@ def scrape_cricinfo_innings(url):
             # Clean headers
             headers = [str(h).replace('\n', ' ').replace('\r', ' ').strip() for h in headers]
             
+            # Add missing column names
+            if len(headers) >= 12 and not headers[11]:  # Column 12 (index 11) is empty
+                headers[11] = 'format'
+            
             df = pd.DataFrame(innings_data, columns=headers)  # type: ignore
             
             # Clean column names
             df.columns = [col.replace('\n', ' ').replace('\r', ' ').strip() for col in df.columns]
             
-            # Save to CSV
-            filename = 'cricinfo_innings_data.csv'
+            # Create data directory path and save to CSV
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+            
+            # Ensure data directory exists
+            os.makedirs(data_dir, exist_ok=True)
+            
+            filename = os.path.join(data_dir, 'cricinfo_innings_data_final.csv')
             df.to_csv(filename, index=False, encoding='utf-8')
             
             print(f"Data successfully saved to {filename}")
@@ -124,10 +134,14 @@ def scrape_cricinfo_innings(url):
         else:
             print("No innings data found. The page structure might be different.")
             
-            # Save page content for debugging
-            with open('debug_page.html', 'w', encoding='utf-8') as f:
+            # Save page content for debugging in data folder
+            data_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+            os.makedirs(data_dir, exist_ok=True)
+            debug_file = os.path.join(data_dir, 'debug_page.html')
+            
+            with open(debug_file, 'w', encoding='utf-8') as f:
                 f.write(response.text)
-            print("Page content saved to debug_page.html for inspection")
+            print(f"Page content saved to {debug_file} for inspection")
             
             return None
             

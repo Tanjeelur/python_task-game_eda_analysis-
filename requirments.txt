@@ -1,0 +1,9 @@
+selenium 
+fake_useragent 
+webdriver-manager
+pandas
+requests
+tqdm
+beautifulsoup4
+matplotlib 
+seaborn
